@@ -137,6 +137,14 @@ class DescribedFeatureOverlay extends StatefulWidget {
   /// all of the current steps are dismissed.
   final Future<bool> Function()? onBackgroundTap;
 
+  /// Some added fields for manually telling the library whether the orientation is left/right/top/bottom
+  final bool? isCloseToTopOrBottom;
+  final bool? isOnLeftHalfOfScreen;
+
+  /// A size parameter that tells the overlay its dimensions. It by default assumes you want full screen dimensions
+  /// which it retrieves from MediaQuery but that is not always the case such as in modal experiences.
+  final Size? size;
+
   const DescribedFeatureOverlay({
     Key? key,
     required this.featureId,
@@ -161,6 +169,9 @@ class DescribedFeatureOverlay extends StatefulWidget {
     this.dismissDuration = const Duration(milliseconds: 250),
     this.barrierDismissible = true,
     this.backgroundDismissible = false,
+    this.isCloseToTopOrBottom,
+    this.isOnLeftHalfOfScreen,
+    this.size,
     this.onBackgroundTap,
   })  : assert(
           barrierDismissible == true || onDismiss == null,
@@ -230,7 +241,7 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
 
   @override
   void didChangeDependencies() {
-    _screenSize = MediaQuery.of(context).size;
+    _screenSize = widget.size ?? MediaQuery.of(context).size;
 
     try {
       _bloc = Bloc.of(context);
@@ -434,13 +445,14 @@ class _DescribedFeatureOverlayState extends State<DescribedFeatureOverlay>
   }
 
   bool _isCloseToTopOrBottom(Offset position) =>
+      widget.isCloseToTopOrBottom ??
       position.dy <= 88.0 || (_screenSize.height - position.dy) <= 88.0;
 
   bool _isOnTopHalfOfScreen(Offset position) =>
       position.dy < (_screenSize.height / 2.0);
 
   bool _isOnLeftHalfOfScreen(Offset position) =>
-      position.dx < (_screenSize.width / 2.0);
+      widget.isOnLeftHalfOfScreen ?? position.dx < (_screenSize.width / 2.0);
 
   /// The value returned from here will be adjusted in [BackgroundContentLayoutDelegate]
   /// in order to match the transition progress and overlay state.
